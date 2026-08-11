@@ -6,9 +6,20 @@ use Illuminate\Http\Request;
 
 class KomponenGajiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $komponen = KomponenGaji::latest()->paginate(10);
+        $query = KomponenGaji::query();
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(function($sub) use ($q) {
+                $sub->where('nama', 'like', "%{$q}%")
+                    ->orWhere('kode', 'like', "%{$q}%");
+            });
+        }
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+        $komponen = $query->latest()->paginate(10)->withQueryString();
         return view('komponen_gaji.index', compact('komponen'));
     }
 

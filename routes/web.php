@@ -42,10 +42,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('pengajuan-izin/{pengajuanIzin}/approve', [PengajuanIzinController::class, 'approve'])->name('pengajuan-izin.approve');
         Route::resource('tugas', TugasController::class)->except(['edit', 'update']);
         Route::post('tugas/{tugas}/status', [TugasController::class, 'updateStatus'])->name('tugas.update-status');
-        Route::resource('penilaian', PenilaianController::class)->only(['index', 'create', 'store', 'show']);
+        Route::resource('penilaian', PenilaianController::class);
         Route::post('penggajian/hitung-semua', [PenggajianController::class, 'hitungSemua'])->name('penggajian.hitung-semua');
         Route::post('penggajian/{penggajian}/konfirmasi', [PenggajianController::class, 'konfirmasi'])->name('penggajian.konfirmasi');
         Route::post('penggajian/{penggajian}/bayar', [PenggajianController::class, 'bayar'])->name('penggajian.bayar');
+        Route::delete('penggajian/{penggajian}', [PenggajianController::class, 'destroy'])->name('penggajian.destroy');
         Route::get('import', [ImportController::class, 'index'])->name('import.index');
         Route::post('import/karyawan', [ImportController::class, 'importKaryawan'])->name('import.karyawan');
         Route::post('import/absensi', [ImportController::class, 'importAbsensi'])->name('import.absensi');

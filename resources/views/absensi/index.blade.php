@@ -4,76 +4,125 @@
 @section('content')
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
     <div>
-        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Data Presensi & Kehadiran</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Catatan riwayat presensi harian karyawan.</p>
+        <h2 class="text-xl font-bold text-gray-900 tracking-tight">Data Presensi & Kehadiran</h2>
+        <p class="text-xs text-gray-500">Catatan riwayat presensi harian karyawan.</p>
     </div>
-    @if(Auth::user()->isAdmin() || Auth::user()->isAtasan())
-    <div class="flex items-center gap-2">
-        <a href="{{ route('absensi.create') }}" 
-           class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/25 transition-all">
-            <i class="bi bi-calendar-plus text-sm"></i>
+    <div class="flex items-center gap-2 flex-wrap">
+        @if(Auth::user()->isKaryawan())
+        <form method="POST" action="{{ route('absensi.harian') }}" class="inline">
+            @csrf
+            <button type="submit" name="status" value="hadir" 
+                    class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition-all">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Absen Hadir Hari Ini</span>
+            </button>
+        </form>
+        @endif
+        @if(Auth::user()->isAdmin() || Auth::user()->isAtasan())
+        <x-button variant="default" href="{{ route('absensi.create') }}">
+            <i class="bi bi-calendar-plus"></i>
             <span>Catat Absensi Manual</span>
-        </a>
-        <a href="{{ route('absensi.rekap') }}" 
-           class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs transition-all">
-            <i class="bi bi-table text-sm"></i>
+        </x-button>
+        <x-button variant="secondary" href="{{ route('absensi.rekap') }}">
+            <i class="bi bi-table"></i>
             <span>Rekap Bulanan</span>
-        </a>
+        </x-button>
+        @endif
     </div>
-    @endif
 </div>
 
-<div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+<!-- Filter Bar -->
+<div class="card p-4 mb-6 bg-white border border-gray-200">
+    <form method="GET" action="{{ route('absensi.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+            <input type="date" name="tanggal" value="{{ request('tanggal') }}" 
+                   class="w-full h-9 px-3 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+        </div>
+        <div>
+            <select name="status" class="w-full h-9 px-3 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                <option value="">-- Semua Status --</option>
+                <option value="hadir" {{ request('status') == 'hadir' ? 'selected' : '' }}>Hadir</option>
+                <option value="terlambat" {{ request('status') == 'terlambat' ? 'selected' : '' }}>Terlambat</option>
+                <option value="izin" {{ request('status') == 'izin' ? 'selected' : '' }}>Izin</option>
+                <option value="sakit" {{ request('status') == 'sakit' ? 'selected' : '' }}>Sakit</option>
+                <option value="cuti" {{ request('status') == 'cuti' ? 'selected' : '' }}>Cuti</option>
+                <option value="alfa" {{ request('status') == 'alfa' ? 'selected' : '' }}>Alfa</option>
+            </select>
+        </div>
+        @if(!Auth::user()->isKaryawan())
+        <div>
+            <select name="karyawan_id" class="w-full h-9 px-3 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                <option value="">-- Semua Karyawan --</option>
+                @foreach($karyawanList as $k)
+                    <option value="{{ $k->id }}" {{ request('karyawan_id') == $k->id ? 'selected' : '' }}>{{ $k->nama_lengkap }} ({{ $k->nip }})</option>
+                @endforeach
+            </select>
+        </div>
+        @endif
+        <div class="flex items-center gap-2">
+            <button type="submit" class="flex-1 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1">
+                <i class="bi bi-search"></i> Cari
+            </button>
+            @if(request('tanggal') || request('status') || request('karyawan_id'))
+            <a href="{{ route('absensi.index') }}" class="h-9 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold transition-all flex items-center justify-center" title="Reset">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+            @endif
+        </div>
+    </form>
+</div>
+
+<div class="card overflow-hidden">
     <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-slate-50 dark:bg-slate-800/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
-                    <th class="py-3.5 px-4">Tanggal</th>
-                    <th class="py-3.5 px-4">Nama Karyawan</th>
-                    <th class="py-3.5 px-4">Jam Masuk</th>
-                    <th class="py-3.5 px-4">Jam Pulang</th>
-                    <th class="py-3.5 px-4">Status</th>
-                    <th class="py-3.5 px-4 text-right">Aksi</th>
+        <table class="table">
+            <thead class="table-header">
+                <tr class="table-row">
+                    <th class="table-head">Tanggal</th>
+                    <th class="table-head">Nama Karyawan</th>
+                    <th class="table-head">Jam Masuk</th>
+                    <th class="table-head">Jam Pulang</th>
+                    <th class="table-head">Status</th>
+                    <th class="table-head text-right">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+            <tbody>
                 @forelse($absensi as $a)
-                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td class="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                <tr class="table-row">
+                    <td class="table-cell font-mono text-gray-900 whitespace-nowrap">
                         {{ $a->tanggal?->format('d M Y') }}
                     </td>
-                    <td class="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
+                    <td class="table-cell font-medium text-gray-900">
                         {{ $a->karyawan->nama_lengkap ?? '-' }}
                     </td>
-                    <td class="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-400">
+                    <td class="table-cell font-mono text-gray-500">
                         {{ $a->jam_masuk ? \Carbon\Carbon::parse($a->jam_masuk)->format('H:i') : '-' }}
                     </td>
-                    <td class="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-400">
+                    <td class="table-cell font-mono text-gray-500">
                         {{ $a->jam_pulang ? \Carbon\Carbon::parse($a->jam_pulang)->format('H:i') : '-' }}
                     </td>
-                    <td class="py-3.5 px-4">
+                    <td class="table-cell">
                         @php
-                            $badgeClass = match($a->status) {
-                                'hadir' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-                                'terlambat' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-                                'sakit', 'izin', 'cuti' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800',
-                                'alfa' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border-rose-200 dark:border-rose-800',
-                                default => 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                            $badgeVariant = match($a->status) {
+                                'hadir' => 'default',
+                                'terlambat' => 'secondary',
+                                'sakit', 'izin', 'cuti' => 'default',
+                                'alfa' => 'destructive',
+                                default => 'outline'
                             };
                         @endphp
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border capitalize {{ $badgeClass }}">
+                        <x-badge :variant="$badgeVariant">
                             {{ str_replace('_', ' ', $a->status) }}
-                        </span>
+                        </x-badge>
                     </td>
-                    <td class="py-3.5 px-4 text-right">
+                    <td class="table-cell text-right">
                         <div class="flex items-center justify-end gap-1">
                             <a href="{{ route('absensi.edit', $a) }}" 
-                               class="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors" title="Edit">
+                               class="p-1.5 rounded-lg text-gray-500 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Edit">
                                 <i class="bi bi-pencil text-sm"></i>
                             </a>
                             <form action="{{ route('absensi.destroy', $a) }}" method="POST" class="inline" onsubmit="return confirm('Hapus catatan presensi ini?')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors" title="Hapus">
+                                <button type="submit" class="p-1.5 rounded-lg text-gray-500 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
                                     <i class="bi bi-trash text-sm"></i>
                                 </button>
                             </form>
@@ -81,8 +130,8 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="6" class="py-12 text-center text-slate-400 text-xs">Belum ada data presensi teratatan.</td>
+                <tr class="table-row">
+                    <td colspan="6" class="table-cell text-center text-gray-500 py-12">Belum ada data presensi teratatan.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -94,3 +143,4 @@
     {{ $absensi->links() }}
 </div>
 @endsection
+

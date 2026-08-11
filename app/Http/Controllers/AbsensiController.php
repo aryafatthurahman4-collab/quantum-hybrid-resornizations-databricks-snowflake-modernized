@@ -8,17 +8,28 @@ use Illuminate\Support\Facades\Auth;
 
 class AbsensiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $query = Absensi::with('karyawan');
         if ($user->isKaryawan()) {
-            $absensi = Absensi::with('karyawan')
-                ->where('karyawan_id', $user->karyawan_id)
-                ->latest()->paginate(30);
-        } else {
-            $absensi = Absensi::with('karyawan')->latest()->paginate(30);
+            $query->where('karyawan_id', $user->karyawan_id);
         }
-        return view('absensi.index', compact('absensi'));
+
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal', $request->tanggal);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('karyawan_id') && !$user->isKaryawan()) {
+            $query->where('karyawan_id', $request->karyawan_id);
+        }
+
+        $absensi = $query->latest()->paginate(30)->withQueryString();
+        $karyawanList = Karyawan::where('aktif', true)->get();
+
+        return view('absensi.index', compact('absensi', 'karyawanList'));
     }
 
     public function create()

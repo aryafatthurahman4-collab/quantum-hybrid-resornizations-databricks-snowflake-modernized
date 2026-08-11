@@ -4,66 +4,118 @@
 @section('content')
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
     <div>
-        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Penugasan Kerja</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Daftar penugasan dan deadline pekerjaan karyawan.</p>
+        <h2 class="text-xl font-bold text-gray-900 tracking-tight">Penugasan Kerja</h2>
+        <p class="text-xs text-gray-500">Daftar penugasan dan deadline pekerjaan karyawan.</p>
     </div>
     @if(in_array(Auth::user()->role, ['admin','atasan']))
-    <a href="{{ route('tugas.create') }}" 
-       class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/25 transition-all">
-        <i class="bi bi-plus-lg text-sm"></i>
+    <x-button variant="default" href="{{ route('tugas.create') }}">
+        <i class="bi bi-plus-lg"></i>
         <span>Buat Tugas Baru</span>
-    </a>
+    </x-button>
     @endif
 </div>
 
-<div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+<!-- Filter Bar -->
+<div class="card p-4 mb-6 bg-white border border-gray-200">
+    <form method="GET" action="{{ route('tugas.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari Judul Tugas..." 
+                   class="w-full h-9 px-3 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+        </div>
+        <div>
+            <select name="status" class="w-full h-9 px-3 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                <option value="">-- Semua Status --</option>
+                <option value="diberikan" {{ request('status') == 'diberikan' ? 'selected' : '' }}>Diberikan</option>
+                <option value="dikerjakan" {{ request('status') == 'dikerjakan' ? 'selected' : '' }}>Dalam Proses</option>
+                <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+            </select>
+        </div>
+        <div>
+            <select name="prioritas" class="w-full h-9 px-3 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                <option value="">-- Semua Prioritas --</option>
+                <option value="rendah" {{ request('prioritas') == 'rendah' ? 'selected' : '' }}>Rendah</option>
+                <option value="sedang" {{ request('prioritas') == 'sedang' ? 'selected' : '' }}>Sedang</option>
+                <option value="tinggi" {{ request('prioritas') == 'tinggi' ? 'selected' : '' }}>Tinggi</option>
+            </select>
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="submit" class="flex-1 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1">
+                <i class="bi bi-search"></i> Cari
+            </button>
+            @if(request('q') || request('status') || request('prioritas'))
+            <a href="{{ route('tugas.index') }}" class="h-9 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold transition-all flex items-center justify-center" title="Reset">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+            @endif
+        </div>
+    </form>
+</div>
+
+<div class="card overflow-hidden">
     <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-slate-50 dark:bg-slate-800/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
-                    <th class="py-3.5 px-4">Judul Penugasan</th>
-                    <th class="py-3.5 px-4">Penerima Tugas</th>
-                    <th class="py-3.5 px-4">Pemberi Tugas</th>
-                    <th class="py-3.5 px-4">Tenggat Waktu</th>
-                    <th class="py-3.5 px-4">Status</th>
-                    <th class="py-3.5 px-4 text-right">Aksi</th>
+        <table class="table">
+            <thead class="table-header">
+                <tr class="table-row">
+                    <th class="table-head">Judul Penugasan</th>
+                    <th class="table-head">Penerima Tugas</th>
+                    <th class="table-head">Pemberi Tugas</th>
+                    <th class="table-head">Tenggat Waktu</th>
+                    <th class="table-head">Status</th>
+                    <th class="table-head text-right">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+            <tbody>
                 @forelse($tugas as $t)
-                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td class="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                        {{ $t->judul }}
+                <tr class="table-row">
+                    <td class="table-cell font-medium text-gray-900">
+                        <div>
+                            <span class="block font-semibold">{{ $t->judul }}</span>
+                            @if($t->deskripsi)
+                            <span class="block text-xs text-gray-500 truncate max-w-xs">{{ $t->deskripsi }}</span>
+                            @endif
+                        </div>
                     </td>
-                    <td class="py-3.5 px-4 font-semibold text-slate-800 dark:text-slate-200">
+                    <td class="table-cell font-medium text-gray-700">
                         {{ $t->karyawan->nama_lengkap ?? '-' }}
                     </td>
-                    <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400">
+                    <td class="table-cell text-gray-500">
                         {{ $t->pemberi->name ?? '-' }}
                     </td>
-                    <td class="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    <td class="table-cell font-mono text-gray-500 whitespace-nowrap">
                         {{ $t->tenggat ? \Carbon\Carbon::parse($t->tenggat)->format('d/m/Y') : '-' }}
                     </td>
-                    <td class="py-3.5 px-4">
+                    <td class="table-cell">
                         @php
-                            $badgeClass = match($t->status) {
-                                'selesai' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-                                'dikerjakan' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800',
-                                default => 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                            $badgeVariant = match($t->status) {
+                                'selesai' => 'default',
+                                'dikerjakan' => 'default',
+                                default => 'secondary'
                             };
                         @endphp
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border capitalize {{ $badgeClass }}">
+                        <x-badge :variant="$badgeVariant" class="capitalize">
                             {{ $t->status }}
-                        </span>
+                        </x-badge>
                     </td>
-                    <td class="py-3.5 px-4 text-right">
-                        <div class="flex items-center justify-end gap-1">
-                            @if(in_array(Auth::user()->role, ['admin','atasan']) && $t->status != 'selesai')
+                    <td class="table-cell text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                            @if(Auth::user()->isKaryawan() && $t->status == 'diberikan')
+                            <form action="{{ route('tugas.update-status', $t) }}" method="POST" class="inline">
+                                @csrf
+                                <input type="hidden" name="status" value="dikerjakan">
+                                <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs shadow-sm transition-all">
+                                    <i class="bi bi-play-fill"></i>
+                                    <span>Kerjakan</span>
+                                </button>
+                            </form>
+                            @endif
+
+                            @if(($t->status != 'selesai'))
                             <form action="{{ route('tugas.update-status', $t) }}" method="POST" class="inline">
                                 @csrf
                                 <input type="hidden" name="status" value="selesai">
-                                <button type="submit" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors" title="Tandai Selesai" onclick="return confirm('Tandai tugas ini selesai?')">
-                                    <i class="bi bi-check-lg text-base"></i>
+                                <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition-all" onclick="return confirm('Tandai tugas ini selesai?')">
+                                    <i class="bi bi-check-lg"></i>
+                                    <span>Selesai</span>
                                 </button>
                             </form>
                             @endif
@@ -71,7 +123,7 @@
                             @if(in_array(Auth::user()->role, ['admin','atasan']))
                             <form action="{{ route('tugas.destroy', $t) }}" method="POST" class="inline" onsubmit="return confirm('Hapus tugas ini?')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors" title="Hapus">
+                                <button type="submit" class="p-1.5 rounded-lg text-gray-500 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
                                     <i class="bi bi-trash text-sm"></i>
                                 </button>
                             </form>
@@ -80,8 +132,8 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="6" class="py-12 text-center text-slate-400 text-xs">Belum ada tugas yang diberikan.</td>
+                <tr class="table-row">
+                    <td colspan="6" class="table-cell text-center text-gray-500 py-12">Belum ada tugas yang diberikan.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -93,3 +145,4 @@
     {{ $tugas->links() }}
 </div>
 @endsection
+

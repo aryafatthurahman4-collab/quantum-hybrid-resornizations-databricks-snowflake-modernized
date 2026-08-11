@@ -9,39 +9,39 @@
                 <i class="bi bi-calendar-check text-xl"></i>
             </span>
             <div>
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Catat Absensi Manual</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Input catatan kehadiran dan waktu kerja harian karyawan</p>
+                <h2 class="text-2xl font-bold tracking-tight text-gray-900">Catat Absensi Manual</h2>
+                <p class="text-xs text-gray-500">Input catatan kehadiran dan waktu kerja harian karyawan</p>
             </div>
         </div>
-        <a href="{{ route('absensi.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-sm transition-all">
+        <x-button variant="secondary" href="{{ route('absensi.index') }}">
             <i class="bi bi-arrow-left"></i> Kembali
-        </a>
+        </x-button>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-6 md:p-8">
+    <div class="card p-6 md:p-8">
         <form action="{{ route('absensi.store') }}" method="POST" class="space-y-6">
             @csrf
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Pilih Karyawan</label>
-                    <select name="karyawan_id" required class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">
+                    <label class="label">Pilih Karyawan</label>
+                    <select name="karyawan_id" required class="input">
                         <option value="">- Pilih Karyawan -</option>
                         @foreach($karyawan as $k)
                             <option value="{{ $k->id }}" {{ old('karyawan_id') == $k->id ? 'selected' : '' }}>
-                                {{ $k->nik ?? $k->nip }} &mdash; {{ $k->nama_lengkap }}
+                                {{ $k->nip }} &mdash; {{ $k->nama_lengkap }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Tanggal</label>
-                    <input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" required class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">
+                    <label class="label">Tanggal</label>
+                    <x-input type="date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" required />
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Status Kehadiran</label>
-                    <select name="status" required class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">
+                    <label class="label">Status Kehadiran</label>
+                    <select name="status" required class="input">
                         <option value="hadir" {{ old('status') == 'hadir' ? 'selected' : '' }}>Hadir (On Time)</option>
                         <option value="terlambat" {{ old('status') == 'terlambat' ? 'selected' : '' }}>Terlambat (Late)</option>
                         <option value="sakit" {{ old('status') == 'sakit' ? 'selected' : '' }}>Sakit (Sick)</option>
@@ -53,30 +53,29 @@
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Jam Masuk</label>
-                    <input type="time" name="jam_masuk" value="{{ old('jam_masuk', '08:00') }}" class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">
+                    <label class="label">Jam Masuk</label>
+                    <x-input type="time" name="jam_masuk" value="{{ old('jam_masuk', '08:00') }}" />
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Jam Pulang</label>
-                    <input type="time" name="jam_pulang" value="{{ old('jam_pulang', '17:00') }}" class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">
+                    <label class="label">Jam Pulang</label>
+                    <x-input type="time" name="jam_pulang" value="{{ old('jam_pulang', '17:00') }}" />
                 </div>
 
                 <div class="md:col-span-2 lg:col-span-3">
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Catatan / Keterangan</label>
-                    <textarea name="keterangan" rows="2" placeholder="Catatan opsional..." class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">{{ old('keterangan') }}</textarea>
+                    <label class="label">Catatan / Keterangan</label>
+                    <textarea name="keterangan" rows="2" placeholder="Catatan opsional..." class="input">{{ old('keterangan') }}</textarea>
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
-                <a href="{{ route('absensi.index') }}" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold transition-all">
-                    Batal
-                </a>
-                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all">
-                    <i class="bi bi-check2-circle text-base"></i> Simpan Presensi
-                </button>
+            <div class="pt-4 border-t border-gray-200 flex items-center justify-end gap-3">
+                <x-button variant="ghost" href="{{ route('absensi.index') }}">Batal</x-button>
+                <x-button variant="default" type="submit">
+                    <i class="bi bi-check2-circle"></i> Simpan Presensi
+                </x-button>
             </div>
         </form>
     </div>
 </div>
 @endsection
+

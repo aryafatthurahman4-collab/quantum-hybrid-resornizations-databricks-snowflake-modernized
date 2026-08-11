@@ -186,10 +186,14 @@ class LaporanController extends Controller
         }
 
         $writer = new Xlsx($spreadsheet);
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="laporan-karyawan.xlsx"');
-        $writer->save('php://output');
-        exit;
+        return response()->stream(
+            fn() => $writer->save('php://output'),
+            200,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="laporan-karyawan.xlsx"',
+            ]
+        );
     }
 
     public function exportAbsensiExcel(Request $request)
@@ -268,10 +272,14 @@ class LaporanController extends Controller
         }
 
         $writer = new Xlsx($spreadsheet);
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="laporan-absensi.xlsx"');
-        $writer->save('php://output');
-        exit;
+        return response()->stream(
+            fn() => $writer->save('php://output'),
+            200,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="laporan-absensi.xlsx"',
+            ]
+        );
     }
 
     public function exportPenilaianExcel(Request $request)
@@ -310,10 +318,14 @@ class LaporanController extends Controller
         }
 
         $writer = new Xlsx($spreadsheet);
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="laporan-penilaian.xlsx"');
-        $writer->save('php://output');
-        exit;
+        return response()->stream(
+            fn() => $writer->save('php://output'),
+            200,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="laporan-penilaian.xlsx"',
+            ]
+        );
     }
 
     public function exportPenggajianExcel(Request $request)
@@ -351,10 +363,14 @@ class LaporanController extends Controller
         }
 
         $writer = new Xlsx($spreadsheet);
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="laporan-penggajian.xlsx"');
-        $writer->save('php://output');
-        exit;
+        return response()->stream(
+            fn() => $writer->save('php://output'),
+            200,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="laporan-penggajian.xlsx"',
+            ]
+        );
     }
 
     // --- PDF Exports ---

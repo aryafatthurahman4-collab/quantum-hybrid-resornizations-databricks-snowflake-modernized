@@ -17,15 +17,27 @@ class PenggajianController extends Controller
         $this->payrollService = $payrollService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $penggajian = Penggajian::with(['karyawan', 'pembuat']);
+        $query = Penggajian::with(['karyawan', 'pembuat']);
         if ($user->isKaryawan()) {
-            $penggajian->where('karyawan_id', $user->karyawan_id);
+            $query->where('karyawan_id', $user->karyawan_id);
         }
-        $penggajian = $penggajian->latest()->paginate(10);
-        return view('penggajian.index', compact('penggajian'));
+
+        if ($request->filled('periode')) {
+            $query->where('periode', 'like', '%' . $request->periode . '%');
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('karyawan_id')) {
+            $query->where('karyawan_id', $request->karyawan_id);
+        }
+
+        $penggajian = $query->latest()->paginate(10)->withQueryString();
+        $karyawanList = Karyawan::where('aktif', true)->get();
+        return view('penggajian.index', compact('penggajian', 'karyawanList'));
     }
 
     public function create()
@@ -82,5 +94,12 @@ class PenggajianController extends Controller
     {
         $penggajian->update(['status' => 'dibayar']);
         return back()->with('success', 'Penggajian ditandai sebagai dibayar.');
+    }
+
+    public function destroy(Penggajian $penggajian)
+    {
+        $penggajian->detail()->delete();
+        $penggajian->delete();
+        return redirect()->route('penggajian.index')->with('success', 'Data penggajian berhasil dihapus.');
     }
 }

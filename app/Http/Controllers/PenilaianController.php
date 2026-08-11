@@ -8,17 +8,26 @@ use Illuminate\Support\Facades\Auth;
 
 class PenilaianController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $penilaian = PenilaianKinerja::with(['karyawan', 'penilai']);
+        $query = PenilaianKinerja::with(['karyawan', 'penilai']);
         if ($user->isKaryawan()) {
-            $penilaian->where('karyawan_id', $user->karyawan_id);
+            $query->where('karyawan_id', $user->karyawan_id);
         } elseif ($user->isAtasan()) {
-            $penilaian->where('penilai_id', $user->id);
+            $query->where('penilai_id', $user->id);
         }
-        $penilaian = $penilaian->latest()->paginate(10);
-        return view('penilaian.index', compact('penilaian'));
+
+        if ($request->filled('periode')) {
+            $query->where('periode', 'like', '%' . $request->periode . '%');
+        }
+        if ($request->filled('karyawan_id')) {
+            $query->where('karyawan_id', $request->karyawan_id);
+        }
+
+        $penilaian = $query->latest()->paginate(10)->withQueryString();
+        $karyawanList = Karyawan::where('aktif', true)->get();
+        return view('penilaian.index', compact('penilaian', 'karyawanList'));
     }
 
     public function create()
@@ -60,5 +69,11 @@ class PenilaianController extends Controller
     {
         $penilaian->load(['karyawan', 'penilai']);
         return view('penilaian.show', compact('penilaian'));
+    }
+
+    public function destroy(PenilaianKinerja $penilaian)
+    {
+        $penilaian->delete();
+        return redirect()->route('penilaian.index')->with('success', 'Penilaian kinerja berhasil dihapus.');
     }
 }

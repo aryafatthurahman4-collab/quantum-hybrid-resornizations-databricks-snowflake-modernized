@@ -4,22 +4,24 @@
 @section('content')
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
     <div>
-        <h2 class="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Penggajian & Payroll</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Riwayat penggajian, kalkulasi Take Home Pay, dan cetak slip gaji.</p>
+        <h2 class="text-xl font-bold text-gray-900 tracking-tight">Penggajian & Payroll</h2>
+        <p class="text-xs text-gray-500">Riwayat penggajian, kalkulasi Take Home Pay, dan cetak slip gaji.</p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
-        @if(in_array(Auth::user()->role, ['admin','atasan']))
-        <a href="{{ route('penggajian.create') }}" 
-           class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/25 transition-all">
-            <i class="bi bi-calculator text-sm"></i>
-            <span>Hitung Gaji Individu</span>
+        <a href="{{ route('laporan.penggajian') }}" class="inline-flex items-center gap-1.5 h-9 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-all">
+            <i class="bi bi-file-earmark-text"></i> Export Laporan
         </a>
+        @if(in_array(Auth::user()->role, ['admin','atasan']))
+        <x-button variant="default" href="{{ route('penggajian.create') }}">
+            <i class="bi bi-calculator"></i>
+            <span>Hitung Gaji Individu</span>
+        </x-button>
         <form action="{{ route('penggajian.hitung-semua') }}" method="POST" class="inline">
             @csrf
             <button type="submit" 
-                    class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-600/25 transition-all"
+                    class="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition-all"
                     onclick="return confirm('Kalkulasi ulang gaji seluruh karyawan aktif untuk periode bulan ini?')">
-                <i class="bi bi-cpu text-sm"></i>
+                <i class="bi bi-cpu"></i>
                 <span>Hitung Semua Gaji Karyawan</span>
             </button>
         </form>
@@ -27,56 +29,94 @@
     </div>
 </div>
 
-<div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+<!-- Filter Bar -->
+<div class="card p-4 mb-6 bg-white border border-gray-200">
+    <form method="GET" action="{{ route('penggajian.index') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+            <input type="month" name="periode" value="{{ request('periode') }}" 
+                   class="w-full h-9 px-3 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+        </div>
+        <div>
+            <select name="status" class="w-full h-9 px-3 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                <option value="">-- Semua Status --</option>
+                <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                <option value="dikonfirmasi" {{ request('status') == 'dikonfirmasi' ? 'selected' : '' }}>Dikonfirmasi</option>
+                <option value="dibayar" {{ request('status') == 'dibayar' ? 'selected' : '' }}>Dibayar</option>
+            </select>
+        </div>
+        @if(!Auth::user()->isKaryawan())
+        <div>
+            <select name="karyawan_id" class="w-full h-9 px-3 bg-gray-50 border border-gray-300 rounded-lg text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                <option value="">-- Semua Karyawan --</option>
+                @foreach($karyawanList as $k)
+                    <option value="{{ $k->id }}" {{ request('karyawan_id') == $k->id ? 'selected' : '' }}>{{ $k->nama_lengkap }} ({{ $k->nip }})</option>
+                @endforeach
+            </select>
+        </div>
+        @endif
+        <div class="flex items-center gap-2">
+            <button type="submit" class="flex-1 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1">
+                <i class="bi bi-search"></i> Cari
+            </button>
+            @if(request('periode') || request('status') || request('karyawan_id'))
+            <a href="{{ route('penggajian.index') }}" class="h-9 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold transition-all flex items-center justify-center" title="Reset">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+            @endif
+        </div>
+    </form>
+</div>
+
+<div class="card overflow-hidden">
     <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-slate-50 dark:bg-slate-800/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
-                    <th class="py-3.5 px-4">Nama Karyawan</th>
-                    <th class="py-3.5 px-4">Periode</th>
-                    <th class="py-3.5 px-4">Take Home Pay</th>
-                    <th class="py-3.5 px-4">Status Pembayaran</th>
-                    <th class="py-3.5 px-4 text-right">Aksi</th>
+        <table class="table">
+            <thead class="table-header">
+                <tr class="table-row">
+                    <th class="table-head">Nama Karyawan</th>
+                    <th class="table-head">Periode</th>
+                    <th class="table-head">Take Home Pay</th>
+                    <th class="table-head">Status Pembayaran</th>
+                    <th class="table-head text-right">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+            <tbody>
                 @forelse($penggajian as $p)
-                <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                    <td class="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                <tr class="table-row">
+                    <td class="table-cell font-medium text-gray-900">
                         {{ $p->karyawan->nama_lengkap ?? '-' }}
                     </td>
-                    <td class="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                    <td class="table-cell font-mono text-gray-500 whitespace-nowrap">
                         {{ \Carbon\Carbon::parse($p->periode.'-01')->format('F Y') }}
                     </td>
-                    <td class="py-3.5 px-4 font-mono font-extrabold text-slate-900 dark:text-white text-sm">
+                    <td class="table-cell font-mono font-bold text-gray-900 text-sm">
                         Rp {{ number_format($p->total_diterima, 0, ',', '.') }}
                     </td>
-                    <td class="py-3.5 px-4">
+                    <td class="table-cell">
                         @php
-                            $badgeClass = match($p->status) {
-                                'dibayar' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-                                'dikonfirmasi' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800',
-                                default => 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                            $badgeVariant = match($p->status) {
+                                'dibayar' => 'default',
+                                'dikonfirmasi' => 'default',
+                                default => 'secondary'
                             };
                         @endphp
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border capitalize {{ $badgeClass }}">
+                        <x-badge :variant="$badgeVariant" class="capitalize">
                             {{ $p->status }}
-                        </span>
+                        </x-badge>
                     </td>
-                    <td class="py-3.5 px-4 text-right">
+                    <td class="table-cell text-right">
                         <div class="flex items-center justify-end gap-1">
                             <a href="{{ route('penggajian.show', $p) }}" 
-                               class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors" title="Rincian Gaji">
+                               class="p-1.5 rounded-lg text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors" title="Rincian Gaji">
                                 <i class="bi bi-eye text-sm"></i>
                             </a>
                             <a href="{{ route('penggajian.slip', $p) }}" target="_blank"
-                               class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors" title="Cetak Slip Gaji">
+                               class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="Cetak Slip Gaji">
                                 <i class="bi bi-printer text-sm"></i>
                             </a>
                             @if($p->status == 'draft' && in_array(Auth::user()->role, ['admin','atasan']))
                             <form action="{{ route('penggajian.konfirmasi', $p) }}" method="POST" class="inline">
                                 @csrf
-                                <button type="submit" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors" title="Konfirmasi Payroll" onclick="return confirm('Konfirmasi payroll ini?')">
+                                <button type="submit" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Konfirmasi Payroll" onclick="return confirm('Konfirmasi payroll ini?')">
                                     <i class="bi bi-check-lg text-base"></i>
                                 </button>
                             </form>
@@ -84,8 +124,16 @@
                             @if($p->status == 'dikonfirmasi' && in_array(Auth::user()->role, ['admin','atasan']))
                             <form action="{{ route('penggajian.bayar', $p) }}" method="POST" class="inline">
                                 @csrf
-                                <button type="submit" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors" title="Tandai Sudah Dibayar" onclick="return confirm('Tandai gaji ini sudah dibayar?')">
+                                <button type="submit" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors" title="Tandai Sudah Dibayar" onclick="return confirm('Tandai gaji ini sudah dibayar?')">
                                     <i class="bi bi-cash text-base"></i>
+                                </button>
+                            </form>
+                            @endif
+                            @if(in_array(Auth::user()->role, ['admin','atasan']))
+                            <form action="{{ route('penggajian.destroy', $p) }}" method="POST" class="inline" onsubmit="return confirm('Hapus data payroll ini?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="p-1.5 rounded-lg text-gray-500 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
+                                    <i class="bi bi-trash text-sm"></i>
                                 </button>
                             </form>
                             @endif
@@ -93,8 +141,8 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="5" class="py-12 text-center text-slate-400 text-xs">Belum ada riwayat penggajian terproses.</td>
+                <tr class="table-row">
+                    <td colspan="5" class="table-cell text-center text-gray-500 py-12">Belum ada riwayat penggajian terproses.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -106,3 +154,4 @@
     {{ $penggajian->links() }}
 </div>
 @endsection
+

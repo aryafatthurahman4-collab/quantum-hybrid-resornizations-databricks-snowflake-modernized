@@ -6,9 +6,17 @@ use Illuminate\Http\Request;
 
 class SatuanKerjaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $satuanKerja = SatuanKerja::latest()->paginate(10);
+        $query = SatuanKerja::query();
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(function($sub) use ($q) {
+                $sub->where('nama_unit', 'like', "%{$q}%")
+                    ->orWhere('singkatan', 'like', "%{$q}%");
+            });
+        }
+        $satuanKerja = $query->latest()->paginate(10)->withQueryString();
         return view('satuan_kerja.index', compact('satuanKerja'));
     }
 

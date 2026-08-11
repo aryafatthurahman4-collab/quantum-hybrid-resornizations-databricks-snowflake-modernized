@@ -8,17 +8,28 @@ use Illuminate\Support\Facades\Auth;
 
 class PengajuanIzinController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $query = PengajuanIzin::with('karyawan');
         if ($user->isKaryawan()) {
-            $pengajuan = PengajuanIzin::with('karyawan')
-                ->where('karyawan_id', $user->karyawan_id)
-                ->latest()->paginate(10);
-        } else {
-            $pengajuan = PengajuanIzin::with('karyawan')->latest()->paginate(10);
+            $query->where('karyawan_id', $user->karyawan_id);
         }
-        return view('pengajuan_izin.index', compact('pengajuan'));
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
+        if ($request->filled('karyawan_id') && !$user->isKaryawan()) {
+            $query->where('karyawan_id', $request->karyawan_id);
+        }
+
+        $pengajuan = $query->latest()->paginate(10)->withQueryString();
+        $karyawanList = Karyawan::where('aktif', true)->get();
+
+        return view('pengajuan_izin.index', compact('pengajuan', 'karyawanList'));
     }
 
     public function create()

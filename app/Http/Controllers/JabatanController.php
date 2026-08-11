@@ -6,9 +6,13 @@ use Illuminate\Http\Request;
 
 class JabatanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $jabatan = Jabatan::latest()->paginate(10);
+        $query = Jabatan::query();
+        if ($request->filled('q')) {
+            $query->where('nama_jabatan', 'like', '%' . $request->q . '%');
+        }
+        $jabatan = $query->latest()->paginate(10)->withQueryString();
         return view('jabatan.index', compact('jabatan'));
     }
 

@@ -9,18 +9,43 @@ use Illuminate\Support\Facades\Storage;
 
 class KaryawanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $karyawan = Karyawan::with(['jabatan', 'satuanKerja'])->latest()->paginate(10);
-        return view('karyawan.index', compact('karyawan'));
+        $query = Karyawan::with(['jabatan', 'satuanKerja']);
+
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(function($sub) use ($q) {
+                $sub->where('nama_lengkap', 'like', "%{$q}%")
+                    ->orWhere('nip', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+            });
+        }
+
+        if ($request->filled('jabatan_id')) {
+            $query->where('jabatan_id', $request->jabatan_id);
+        }
+
+        if ($request->filled('satuan_kerja_id')) {
+            $query->where('satuan_kerja_id', $request->satuan_kerja_id);
+        }
+
+        if ($request->filled('aktif')) {
+            $query->where('aktif', $request->aktif == '1');
+        }
+
+        $karyawan = $query->latest()->paginate(10)->withQueryString();
+        $jabatanList = Jabatan::all();
+        $satuanKerjaList = SatuanKerja::all();
+
+        return view('karyawan.index', compact('karyawan', 'jabatanList', 'satuanKerjaList'));
     }
 
     public function create()
     {
         $jabatan = Jabatan::all();
-        $units = SatuanKerja::all();
-        $satuanKerja = $units;
-        return view('karyawan.create', compact('jabatan', 'units', 'satuanKerja'));
+        $satuanKerja = SatuanKerja::all();
+        return view('karyawan.create', compact('jabatan', 'satuanKerja'));
     }
 
     public function store(Request $request)
@@ -63,9 +88,8 @@ class KaryawanController extends Controller
     public function edit(Karyawan $karyawan)
     {
         $jabatan = Jabatan::all();
-        $units = SatuanKerja::all();
-        $satuanKerja = $units;
-        return view('karyawan.edit', compact('karyawan', 'jabatan', 'units', 'satuanKerja'));
+        $satuanKerja = SatuanKerja::all();
+        return view('karyawan.edit', compact('karyawan', 'jabatan', 'satuanKerja'));
     }
 
     public function update(Request $request, Karyawan $karyawan)

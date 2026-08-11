@@ -1,161 +1,111 @@
 @extends('layouts.app')
 @section('title', 'Laporan Absensi')
 @section('content')
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2 no-print">
+@php $fmt = function($d) { return $d ? \Carbon\Carbon::parse($d)->format('d/m/Y') : '-'; }; @endphp
+
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
     <div>
-        <h5 class="mb-1" style="font-weight:700">Laporan Absensi & Kehadiran</h5>
-        <p style="font-size:.82rem;color:var(--gray);margin:0">
-            Periode: <b>{{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }}</b> s/d <b>{{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</b>
-            @if($startTime || $endTime)
-                | Jam Masuk: <b>{{ $startTime ?? 'Mulai' }}</b> - <b>{{ $endTime ?? 'Selesai' }}</b>
-            @endif
+        <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Laporan Absensi & Kehadiran</h2>
+        <p class="text-xs text-gray-500">Periode: <b>{{ $fmt($startDate) }}</b> s/d <b>{{ $fmt($endDate) }}</b>
+            @if($startTime || $endTime) | Jam: <b>{{ $startTime ?? 'Mulai' }}</b> - <b>{{ $endTime ?? 'Selesai' }}</b> @endif
         </p>
     </div>
-    
-    <!-- Action Export Buttons -->
-    <div class="report-toolbar d-flex gap-2 align-self-start flex-wrap">
-        <a href="{{ route('laporan.absensi.excel', request()->all()) }}" class="btn btn-sm btn-success d-flex align-items-center gap-1">
-            <i class="bi bi-file-earmark-excel"></i> Excel
-        </a>
-        <a href="{{ route('laporan.absensi.word', request()->all()) }}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
-            <i class="bi bi-file-earmark-word"></i> Word
-        </a>
-        <a href="{{ route('laporan.absensi.pdf', request()->all()) }}" class="btn btn-sm btn-danger d-flex align-items-center gap-1">
-            <i class="bi bi-file-earmark-pdf"></i> PDF
-        </a>
-        <a href="{{ route('laporan.absensi.pptx', request()->all()) }}" class="btn btn-sm btn-warning d-flex align-items-center gap-1">
-            <i class="bi bi-file-earmark-slides"></i> PPTX
-        </a>
-        <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" onclick="window.print()">
-            <i class="bi bi-printer"></i> Cetak
-        </button>
+    <div class="flex items-center gap-2 flex-wrap">
+        <a href="{{ route('laporan.absensi.excel', request()->all()) }}" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition-all"><i class="bi bi-file-earmark-excel text-sm"></i> Excel</a>
+        <a href="{{ route('laporan.absensi.word', request()->all()) }}" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-sm transition-all"><i class="bi bi-file-earmark-word text-sm"></i> Word</a>
+        <a href="{{ route('laporan.absensi.pdf', request()->all()) }}" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-sm transition-all"><i class="bi bi-file-earmark-pdf text-sm"></i> PDF</a>
+        <a href="{{ route('laporan.absensi.pptx', request()->all()) }}" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-semibold text-xs shadow-sm transition-all"><i class="bi bi-file-earmark-slides text-sm"></i> PPTX</a>
+        <button onclick="window.print()" class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 text-xs font-semibold shadow-sm transition-all"><i class="bi bi-printer text-sm"></i> Cetak</button>
     </div>
 </div>
 
-<!-- Filter Card -->
-<div class="content-card mb-4 no-print" style="border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-    <div class="card-body p-3">
-        <form method="GET" action="{{ route('laporan.absensi') }}" class="row g-2">
-            <div class="col-md-3 col-6">
-                <label class="form-label small text-muted mb-1">Tanggal Mulai</label>
-                <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDate }}">
-            </div>
-            <div class="col-md-3 col-6">
-                <label class="form-label small text-muted mb-1">Tanggal Selesai</label>
-                <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDate }}">
-            </div>
-            <div class="col-md-2 col-6">
-                <label class="form-label small text-muted mb-1">Jam Masuk (Min)</label>
-                <input type="time" name="start_time" class="form-control form-control-sm" value="{{ $startTime }}">
-            </div>
-            <div class="col-md-2 col-6">
-                <label class="form-label small text-muted mb-1">Jam Masuk (Max)</label>
-                <input type="time" name="end_time" class="form-control form-control-sm" value="{{ $endTime }}">
-            </div>
-            <div class="col-md-2 d-flex align-items-end gap-1">
-                <button type="submit" class="btn btn-sm btn-custom w-100"><i class="bi bi-funnel"></i></button>
-                <a href="{{ route('laporan.absensi') }}" class="btn btn-sm btn-outline-secondary w-100"><i class="bi bi-arrow-counterclockwise"></i></a>
-            </div>
-        </form>
-    </div>
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-6">
+    <form method="GET" action="{{ route('laporan.absensi') }}" class="grid grid-cols-1 sm:grid-cols-5 gap-4">
+        <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal Mulai</label>
+            <input type="date" name="start_date" value="{{ $startDate }}" class="w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal Selesai</label>
+            <input type="date" name="end_date" value="{{ $endDate }}" class="w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jam Masuk (Min)</label>
+            <input type="time" name="start_time" value="{{ $startTime }}" class="w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jam Masuk (Max)</label>
+            <input type="time" name="end_time" value="{{ $endTime }}" class="w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+        </div>
+        <div class="flex items-end gap-2">
+            <button type="submit" class="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5"><i class="bi bi-funnel"></i> Filter</button>
+            <a href="{{ route('laporan.absensi') }}" class="flex-1 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
 </div>
 
-<!-- Tabs to view Rekap vs Detail -->
-<ul class="nav nav-pills mb-3 no-print" id="absensiTab" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active btn-sm" id="rekap-tab" data-bs-toggle="pill" data-bs-target="#rekap-content" type="button" role="tab" aria-selected="true"><i class="bi bi-table me-1"></i> Rekapitulasi Kehadiran</button>
-    </li>
-    <li class="nav-item ms-2" role="presentation">
-        <button class="nav-link btn-sm" id="detail-tab" data-bs-toggle="pill" data-bs-target="#detail-content" type="button" role="tab" aria-selected="false"><i class="bi bi-list-ul me-1"></i> Rincian Detail Kehadiran</button>
-    </li>
-</ul>
+<div x-data="{ tab: 'rekap' }">
+    <div class="flex items-center gap-2 mb-4">
+        <button @click="tab = 'rekap'" :class="tab === 'rekap' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'" class="px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5"><i class="bi bi-table"></i> Rekapitulasi Kehadiran</button>
+        <button @click="tab = 'detail'" :class="tab === 'detail' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'" class="px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5"><i class="bi bi-list-ul"></i> Rincian Detail</button>
+    </div>
 
-<div class="tab-content" id="absensiTabContent">
-    <!-- Rekapitulasi Content -->
-    <div class="tab-pane fade show active" id="rekap-content" role="tabpanel" aria-labelledby="rekap-tab">
-        <div class="content-card" style="border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-            <div class="card-body p-0">
-                <table class="table-custom">
-                    <thead>
-                        <tr>
-                            <th style="padding: 12px 16px;">NIP</th>
-                            <th>Nama</th>
-                            <th>Unit</th>
-                            <th>Hadir</th>
-                            <th>Terlambat</th>
-                            <th>Izin</th>
-                            <th>Sakit</th>
-                            <th>Cuti</th>
-                            <th>Dinas Luar</th>
-                            <th>Alfa</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($rekap as $r)
-                            <tr>
-                                <td style="padding: 12px 16px;"><code>{{ $r['nip'] }}</code></td>
-                                <td style="font-weight:500">{{ $r['nama'] }}</td>
-                                <td style="color:var(--gray)">{{ $r['unit'] }}</td>
-                                <td><span class="badge-custom badge-success">{{ $r['hadir'] }}</span></td>
-                                <td><span class="badge-custom badge-warning">{{ $r['terlambat'] }}</span></td>
-                                <td><span class="badge-custom badge-info">{{ $r['izin'] }}</span></td>
-                                <td><span class="badge-custom badge-secondary">{{ $r['sakit'] }}</span></td>
-                                <td><span class="badge-custom badge-primary">{{ $r['cuti'] }}</span></td>
-                                <td><span class="badge-custom badge-primary" style="background-color: #cbd5e1; color: #1e293b">{{ $r['dinas_luar'] }}</span></td>
-                                <td><span class="badge-custom badge-danger">{{ $r['alfa'] }}</span></td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+    <div x-show="tab === 'rekap'" class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100/50 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-200">
+                        <th class="py-3 px-4">NIP</th><th>Nama</th><th>Unit</th><th class="text-center">Hadir</th><th class="text-center">Terlambat</th><th class="text-center">Izin</th><th class="text-center">Sakit</th><th class="text-center">Cuti</th><th class="text-center">DL</th><th class="text-center">Alfa</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-xs">
+                    @foreach($rekap as $r)
+                    <tr class="hover:bg-gray-100/40 transition-colors">
+                        <td class="py-3 px-4 font-mono text-gray-500">{{ $r['nip'] }}</td>
+                        <td class="font-semibold text-gray-900">{{ $r['nama'] }}</td>
+                        <td class="text-gray-500">{{ $r['unit'] }}</td>
+                        <td class="text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">{{ $r['hadir'] }}</span></td>
+                        <td class="text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">{{ $r['terlambat'] }}</span></td>
+                        <td class="text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">{{ $r['izin'] }}</span></td>
+                        <td class="text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200">{{ $r['sakit'] }}</span></td>
+                        <td class="text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-700 border border-violet-200">{{ $r['cuti'] }}</span></td>
+                        <td class="text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">{{ $r['dinas_luar'] }}</span></td>
+                        <td class="text-center"><span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">{{ $r['alfa'] }}</span></td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Detail Rincian Content -->
-    <div class="tab-pane fade" id="detail-content" role="tabpanel" aria-labelledby="detail-tab">
-        <div class="content-card" style="border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-            <div class="card-body p-0">
-                <table class="table-custom">
-                    <thead>
-                        <tr>
-                            <th style="padding: 12px 16px;">Tanggal</th>
-                            <th>NIP</th>
-                            <th>Nama Karyawan</th>
-                            <th>Jabatan</th>
-                            <th>Jam Masuk</th>
-                            <th>Jam Pulang</th>
-                            <th>Status</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($details as $d)
-                            <tr>
-                                <td style="padding: 12px 16px;"><code>{{ \Carbon\Carbon::parse($d->tanggal)->format('d/m/Y') }}</code></td>
-                                <td><code>{{ $d->karyawan->nip ?? '-' }}</code></td>
-                                <td style="font-weight:500">{{ $d->karyawan->nama_lengkap ?? '-' }}</td>
-                                <td style="color:var(--gray)">{{ $d->karyawan->jabatan->nama_jabatan ?? '-' }}</td>
-                                <td>{{ $d->jam_masuk ?? '-' }}</td>
-                                <td>{{ $d->jam_pulang ?? '-' }}</td>
-                                <td>
-                                    <span class="badge-custom @if($d->status == 'hadir') badge-success 
-                                                       @elseif($d->status == 'terlambat') badge-warning
-                                                       @elseif($d->status == 'izin' || $d->status == 'sakit' || $d->status == 'cuti') badge-info
-                                                       @elseif($d->status == 'dinas_luar') badge-primary
-                                                       @else badge-danger @endif">
-                                        {{ ucfirst($d->status) }}
-                                    </span>
-                                </td>
-                                <td><span style="font-size: .8rem; color: var(--gray)">{{ $d->keterangan ?? '-' }}</span></td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-4 text-muted">Tidak ada rincian data absensi untuk filter yang ditentukan.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+    <div x-show="tab === 'detail'" class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100/50 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-200">
+                        <th class="py-3 px-4">Tanggal</th><th>NIP</th><th>Nama</th><th>Jabatan</th><th>Jam Masuk</th><th>Jam Pulang</th><th>Status</th><th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-xs">
+                    @forelse($details as $d)
+                    <tr class="hover:bg-gray-100/40 transition-colors">
+                        <td class="py-3 px-4 font-mono text-gray-500">{{ $fmt($d->tanggal) }}</td>
+                        <td class="font-mono text-gray-500">{{ $d->karyawan->nip ?? '-' }}</td>
+                        <td class="font-semibold text-gray-900">{{ $d->karyawan->nama_lengkap ?? '-' }}</td>
+                        <td class="text-gray-600">{{ $d->karyawan->jabatan->nama_jabatan ?? '-' }}</td>
+                        <td>{{ $d->jam_masuk ?? '-' }}</td>
+                        <td>{{ $d->jam_pulang ?? '-' }}</td>
+                        <td>
+                            @php $sc = match($d->status) {'hadir'=>'bg-emerald-50 text-emerald-700 border-emerald-200','terlambat'=>'bg-amber-50 text-amber-700 border-amber-200','izin'=>'bg-blue-50 text-blue-700 border-blue-200','sakit'=>'bg-gray-100 text-gray-600 border-gray-200','cuti'=>'bg-violet-50 text-violet-700 border-violet-200','dinas_luar'=>'bg-slate-100 text-slate-600 border-slate-200',default=>'bg-rose-50 text-rose-700 border-rose-200'}; @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border capitalize {{ $sc }}">{{ ucfirst($d->status) }}</span>
+                        </td>
+                        <td class="text-gray-500 text-[11px]">{{ $d->keterangan ?? '-' }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="8" class="py-12 text-center text-gray-400 text-xs">Tidak ada rincian data absensi.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

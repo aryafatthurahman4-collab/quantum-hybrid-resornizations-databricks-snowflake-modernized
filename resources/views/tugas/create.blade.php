@@ -9,44 +9,44 @@
                 <i class="bi bi-clipboard-plus text-xl"></i>
             </span>
             <div>
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Buat Tugas Karyawan</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Delegasikan penugasan kerja baru kepada staf</p>
+                <h2 class="text-2xl font-bold tracking-tight text-gray-900">Buat Tugas Karyawan</h2>
+                <p class="text-xs text-gray-500">Delegasikan penugasan kerja baru kepada staf</p>
             </div>
         </div>
-        <a href="{{ route('tugas.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-sm transition-all">
+        <x-button variant="secondary" href="{{ route('tugas.index') }}">
             <i class="bi bi-arrow-left"></i> Kembali
-        </a>
+        </x-button>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm p-6 md:p-8">
+    <div class="card p-6 md:p-8">
         <form action="{{ route('tugas.store') }}" method="POST" class="space-y-6">
             @csrf
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Judul Tugas</label>
-                    <input type="text" name="judul" value="{{ old('judul') }}" required placeholder="Contoh: Penyusunan Laporan Tahunan SDM" class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">
+                    <label class="label">Judul Tugas</label>
+                    <x-input type="text" name="judul" value="{{ old('judul') }}" required placeholder="Contoh: Penyusunan Laporan Tahunan SDM" />
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Penerima Tugas (Karyawan)</label>
-                    <select name="karyawan_id" required class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">
+                    <label class="label">Penerima Tugas (Karyawan)</label>
+                    <select name="karyawan_id" required class="input">
                         <option value="">- Pilih Karyawan -</option>
                         @foreach($karyawan as $k)
                             <option value="{{ $k->id }}" {{ old('karyawan_id') == $k->id ? 'selected' : '' }}>
-                                {{ $k->nik ?? $k->nip }} &mdash; {{ $k->nama_lengkap }}
+                                {{ $k->nip }} &mdash; {{ $k->nama_lengkap }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Tenggat Waktu (Deadline)</label>
-                    <input type="date" name="tenggat" value="{{ old('tenggat') }}" class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">
+                    <label class="label">Tenggat Waktu (Deadline)</label>
+                    <x-input type="date" name="tenggat" value="{{ old('tenggat') }}" />
                 </div>
 
                 <div>
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Tingkat Prioritas</label>
-                    <select name="prioritas" required class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">
+                    <label class="label">Tingkat Prioritas</label>
+                    <select name="prioritas" required class="input">
                         <option value="rendah" {{ old('prioritas') == 'rendah' ? 'selected' : '' }}>Rendah (Low)</option>
                         <option value="sedang" {{ old('prioritas', 'sedang') == 'sedang' ? 'selected' : '' }}>Sedang (Medium)</option>
                         <option value="tinggi" {{ old('prioritas') == 'tinggi' ? 'selected' : '' }}>Tinggi (High)</option>
@@ -54,20 +54,19 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="block mb-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Deskripsi & Instruksi Tugas</label>
-                    <textarea name="deskripsi" rows="4" placeholder="Detail instruksi penugasan..." class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-all">{{ old('deskripsi') }}</textarea>
+                    <label class="label">Deskripsi & Instruksi Tugas</label>
+                    <textarea name="deskripsi" rows="4" placeholder="Detail instruksi penugasan..." class="input">{{ old('deskripsi') }}</textarea>
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
-                <a href="{{ route('tugas.index') }}" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold transition-all">
-                    Batal
-                </a>
-                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all">
-                    <i class="bi bi-check2-circle text-base"></i> Simpan Penugasan
-                </button>
+            <div class="pt-4 border-t border-gray-200 flex items-center justify-end gap-3">
+                <x-button variant="ghost" href="{{ route('tugas.index') }}">Batal</x-button>
+                <x-button variant="default" type="submit">
+                    <i class="bi bi-check2-circle"></i> Simpan Penugasan
+                </x-button>
             </div>
         </form>
     </div>
 </div>
 @endsection
+
