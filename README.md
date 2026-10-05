@@ -73,8 +73,8 @@ Developed & Maintained by **Arya Fatthurahman** ([@aryafatthurahman4-collab](htt
 
 ```bash
 # 1. Clone Repository
-git clone https://github.com/aryafatthurahman4-collab/quantum-hybrid-resornizations-databricks-snowflake.git
-cd quantum-hybrid-resornizations-databricks-snowflake
+git clone https://github.com/aryafatthurahman4-collab/quantum-hybrid-resornizations-databricks-snowflake-modernized.git
+cd quantum-hybrid-resornizations-databricks-snowflake-modernized
 
 # 2. Install Python Dependencies
 pip install -r requirements.txt

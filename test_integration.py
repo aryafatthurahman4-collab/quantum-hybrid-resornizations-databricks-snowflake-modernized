@@ -17,6 +17,8 @@ print("=" * 70)
 print("COMPREHENSIVE QUANTUM INTEGRATION TEST SUITE")
 print("=" * 70)
 
+failures: list[str] = []
+
 # 1. Custom quantum circuits
 print("\n1. Testing quantum_circuit.py...")
 try:
@@ -26,6 +28,7 @@ try:
     print(f"   [OK] QuantumFeatureExtractor working: {output.shape}")
 except Exception as e:
     print(f"   [FAIL] quantum_circuit failed: {e}")
+    failures.append(f"quantum_circuit: {e}")
 
 # 2. Diffusion model
 print("\n2. Testing diffusion_model.py...")
@@ -37,6 +40,7 @@ try:
     print(f"   [OK] DiffusionProcess working: loss = {loss.item():.6f}")
 except Exception as e:
     print(f"   [FAIL] diffusion_model failed: {e}")
+    failures.append(f"diffusion_model: {e}")
 
 # 3. Hybrid model
 print("\n3. Testing hybrid_model.py...")
@@ -49,6 +53,7 @@ try:
     print(f"   [OK] HybridDiffusionModel & QuantumGuidedDiffusion working: {h_out.shape}, {qg_out.shape}")
 except Exception as e:
     print(f"   [FAIL] hybrid_model failed: {e}")
+    failures.append(f"hybrid_model: {e}")
 
 # 4. Quantum Hadamard Engine
 print("\n4. Testing quantum_hadamard.py...")
@@ -60,6 +65,7 @@ try:
     print(f"   [OK] QuantumHadamardAttention working: {h_out.shape}")
 except Exception as e:
     print(f"   [FAIL] quantum_hadamard failed: {e}")
+    failures.append(f"quantum_hadamard: {e}")
 
 # 5. IBM Quantum Qiskit Integration
 print("\n5. Testing integrated_ibm_quantum.py...")
@@ -70,6 +76,7 @@ try:
     print(f"   [OK] IBMQuantumCNN working: {out.shape}")
 except Exception as e:
     print(f"   [FAIL] integrated_ibm_quantum failed: {e}")
+    failures.append(f"integrated_ibm_quantum: {e}")
 
 # 6. Ingenii Quantum Hybrid Networks
 print("\n6. Testing integrated_quantum_networks.py...")
@@ -80,6 +87,7 @@ try:
     print(f"   [OK] HybridQuantumCNN (Ingenii) working: {out.shape}")
 except Exception as e:
     print(f"   [FAIL] integrated_quantum_networks failed: {e}")
+    failures.append(f"integrated_quantum_networks: {e}")
 
 # 7. NesyaLab Quantum Hybrid Diffusion
 print("\n7. Testing integrated_diffusion_models.py...")
@@ -90,6 +98,7 @@ try:
     print(f"   [OK] NesyaHybridDiffusion working: loss = {loss.item():.6f}")
 except Exception as e:
     print(f"   [FAIL] integrated_diffusion_models failed: {e}")
+    failures.append(f"integrated_diffusion_models: {e}")
 
 # 8. D-Wave Quantum Annealing
 print("\n8. Testing integrated_dwave.py...")
@@ -100,6 +109,7 @@ try:
     print(f"   [OK] DWaveHybridDiffusion working: {out.shape}")
 except Exception as e:
     print(f"   [FAIL] integrated_dwave failed: {e}")
+    failures.append(f"integrated_dwave: {e}")
 
 # 9. TensorFlow Quantum Integration
 print("\n9. Testing integrated_tf_quantum.py...")
@@ -110,6 +120,7 @@ try:
     print(f"   [OK] TFQuantumCNN working: {out.shape}")
 except Exception as e:
     print(f"   [FAIL] integrated_tf_quantum failed: {e}")
+    failures.append(f"integrated_tf_quantum: {e}")
 
 # 10. Geometric Quantum Tensor
 print("\n10. Testing integrated_geometric_tensor.py...")
@@ -120,6 +131,7 @@ try:
     print(f"   [OK] GeometricQuantumCircuit working: {out.shape}")
 except Exception as e:
     print(f"   [FAIL] integrated_geometric_tensor failed: {e}")
+    failures.append(f"integrated_geometric_tensor: {e}")
 
 # 11. Quantum Neural Networks (QNN)
 print("\n11. Testing integrated_quantum_nn.py...")
@@ -130,6 +142,7 @@ try:
     print(f"   [OK] HybridQNN working: {out.shape}")
 except Exception as e:
     print(f"   [FAIL] integrated_quantum_nn failed: {e}")
+    failures.append(f"integrated_quantum_nn: {e}")
 
 # 12. QC-CNN Inception
 print("\n12. Testing integrated_qc_cnn.py...")
@@ -140,6 +153,7 @@ try:
     print(f"   [OK] QCCNNInception working: {out.shape}")
 except Exception as e:
     print(f"   [FAIL] integrated_qc_cnn failed: {e}")
+    failures.append(f"integrated_qc_cnn: {e}")
 
 # 13. Quantum Transformer & ViT
 print("\n13. Testing quantum_transformer.py...")
@@ -150,6 +164,7 @@ try:
     print(f"   [OK] QuantumVisionTransformer working: {out.shape}")
 except Exception as e:
     print(f"   [FAIL] quantum_transformer failed: {e}")
+    failures.append(f"quantum_transformer: {e}")
 
 # 14. Quantum Meta-Learning (MAML)
 print("\n14. Testing quantum_meta_learning.py...")
@@ -160,6 +175,7 @@ try:
     print(f"   [OK] QuantumMAML working: {out.shape}")
 except Exception as e:
     print(f"   [FAIL] quantum_meta_learning failed: {e}")
+    failures.append(f"quantum_meta_learning: {e}")
 
 # 15. Quantum Reinforcement Learning & Federated
 print("\n15. Testing quantum_reinforcement_learning.py & quantum_federated_learning.py...")
@@ -171,6 +187,7 @@ try:
     print(f"   [OK] QuantumPPO & QuantumFederatedServer working: action = {act.item()}")
 except Exception as e:
     print(f"   [FAIL] RL / Federated failed: {e}")
+    failures.append(f"RL / Federated: {e}")
 
 # 16. Web App Initialization
 print("\n16. Testing app.py Flask Initialization...")
@@ -180,7 +197,14 @@ try:
     print("   [OK] Flask App & All Model Registries initialized successfully!")
 except Exception as e:
     print(f"   [FAIL] app.py initialization failed: {e}")
+    failures.append(f"app.py initialization: {e}")
 
 print("\n" + "=" * 70)
+if failures:
+    print(f"{len(failures)} QUANTUM INTEGRATION TEST(S) FAILED")
+    for failure in failures:
+        print(f" - {failure}")
+    sys.exit(1)
+
 print("ALL QUANTUM INTEGRATION TESTS COMPLETED SUCCESSFULLY")
 print("=" * 70)
